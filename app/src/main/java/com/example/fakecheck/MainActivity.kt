@@ -24,6 +24,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tVResult: TextView
     private lateinit var btnMore: Button
     private var answer = ""
+
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,60 +45,29 @@ class MainActivity : AppCompatActivity() {
         btnMore = findViewById(R.id.btnMore)
         btnMore.visibility = View.INVISIBLE
         btnSubmit.setOnClickListener {
-            tVResult.visibility = View.VISIBLE
-            val hasSense = checkIfValid()
-            if (hasSense) {
-                var prompt =
-                    "Проверь информацию на достоверность/недостоверность, разбив ответ на три параграфа: вердикт из одного слова - Достоверно/Недостоверно, аргументы, источники. Запрос: "
-                prompt += ("\n Дата: " + eTPrompt1.text)
-                prompt += ("\n Страна: " + eTPrompt2.text)
-                prompt += ("\n Регион/Город: " + eTPrompt3.text)
-                prompt += ("\n Произошедшее: " + eTPrompt4.text)
-                runBlocking {
-                    val generativeModel = GenerativeModel(
-                        modelName = "gemini-pro",
-                        apiKey = "AIzaSyB44Xq9X5Imq0LmZZdcwdajTOPLLIB30ew"
-                    )
-                    val response = generativeModel.generateContent(prompt)
-                    answer = response.text ?: "something went wrong"
-                    btnMore.visibility = View.VISIBLE
-                }
-            } else {
-                eTPrompt1.text.clear()
-                eTPrompt2.text.clear()
-                eTPrompt3.text.clear()
-                eTPrompt4.text.clear()
-                tVResult.text = "Введите корректные данные!"
+            runBlocking {
+                tVResult.visibility = View.VISIBLE
+            }
+            var prompt = "Проверь информацию на достоверность/недостоверность, разбив ответ на три параграфа: вердикт из одного слова - Достоверно/Недостоверно/Недостаточно информации, аргументы, источники. Запрос: "
+            prompt += ("\n Дата: " + eTPrompt1.text)
+            prompt += ("\n Страна: " + eTPrompt2.text)
+            prompt += ("\n Регион/Город: " + eTPrompt3.text)
+            prompt += ("\n Произошедшее: " + eTPrompt4.text)
+            runBlocking {
+                val generativeModel = GenerativeModel(
+                    modelName = "gemini-pro",
+                    apiKey = "AIzaSyB44Xq9X5Imq0LmZZdcwdajTOPLLIB30ew"
+                )
+                val response = generativeModel.generateContent(prompt)
+                answer = response.text ?: "something went wrong"
+                btnMore.visibility = View.VISIBLE
             }
         }
+
         btnMore.setOnClickListener {
             val intent = Intent(this@MainActivity, AnswerActivity::class.java)
             intent.putExtra("answer", answer)
             startActivity(intent)
         }
-    }
-
-    private fun checkIfValid(): Boolean {
-        var prompt =
-            "Проверь, есть ли смысл в следующем запросе как информации которую можно подтвердить или опровергнуть - не короткая ли информация о произошедшем(если короткая то ответь нет): "
-        prompt += ("\n Дата: " + eTPrompt1.text)
-        prompt += ("\n Страна: " + eTPrompt2.text)
-        prompt += ("\n Регион/Город: " + eTPrompt3.text)
-        prompt += ("\n Произошедшее: " + eTPrompt4.text)
-        prompt += "\n ответь коротко: Да/Нет"
-        var hasSense = true
-        lifecycleScope.launch {
-            val generativeModel = GenerativeModel(
-                // For text-only input, use the gemini-pro model
-                modelName = "gemini-pro",
-                apiKey = "AIzaSyB44Xq9X5Imq0LmZZdcwdajTOPLLIB30ew"
-            )
-            val response = generativeModel.generateContent(prompt)
-
-            if (response.text == "Нет") {
-                hasSense = false
-            }
-        }
-        return hasSense
     }
 }
