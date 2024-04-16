@@ -44,15 +44,15 @@ class MainActivity : AppCompatActivity() {
         tVResult.visibility = View.INVISIBLE
         btnMore = findViewById(R.id.btnMore)
         btnMore.visibility = View.INVISIBLE
+
         btnSubmit.setOnClickListener {
-            runBlocking {
-                tVResult.visibility = View.VISIBLE
-            }
-            var prompt = "Проверь информацию на достоверность/недостоверность, разбив ответ на три параграфа: вердикт из одного слова - Достоверно/Недостоверно/Недостаточно информации, аргументы, источники. Запрос: "
+            var prompt =
+                "Проверь информацию на достоверность/недостоверность, разбив ответ на три параграфа: вердикт из одного слова - Достоверно/Недостоверно, аргументы, источники. Запрос: "
             prompt += ("\n Дата: " + eTPrompt1.text)
             prompt += ("\n Страна: " + eTPrompt2.text)
             prompt += ("\n Регион/Город: " + eTPrompt3.text)
             prompt += ("\n Произошедшее: " + eTPrompt4.text)
+            prompt += "\n размер ответа не должен превышать 100 слов"
             runBlocking {
                 val generativeModel = GenerativeModel(
                     modelName = "gemini-pro",
@@ -60,6 +60,8 @@ class MainActivity : AppCompatActivity() {
                 )
                 val response = generativeModel.generateContent(prompt)
                 answer = response.text ?: "something went wrong"
+                tVResult.visibility = View.VISIBLE
+                tVResult.text = getVerdict(answer)
                 btnMore.visibility = View.VISIBLE
             }
         }
@@ -69,5 +71,20 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("answer", answer)
             startActivity(intent)
         }
+    }
+
+    fun getVerdict(verdict: String): String {
+        var array = verdict.trim().split(" ")
+        var answer = array[1]
+        if (answer.contains("Недостоверно")) {
+            answer = "Недостоверно"
+        }
+        else if (answer.contains("Достоверно")) {
+            answer = "Достоверно"
+        }
+        else {
+            answer = "Недостоверно"
+        }
+        return answer
     }
 }

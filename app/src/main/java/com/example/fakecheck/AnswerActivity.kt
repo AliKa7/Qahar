@@ -18,23 +18,8 @@ class AnswerActivity : AppCompatActivity() {
         setContentView(R.layout.activity_answer)
         answerTextView = findViewById(R.id.textView)
         answer = intent.getStringExtra("answer") ?: "NOT FOUND"
-        val array = answer.trim().split(" ")
-        val ans1 = mutableListOf<String>()
-        for (i in array) {
-            if (i=="Достоверно" || i=="Недостоверно" || i=="информации") {
-                ans1.add(i)
-                break
-            }
-            else if (i=="Недостаточно") {
-                ans1.add(i)
-            }
-        }
-        for (i in ans1) {
-            Log.d("salam", i)
-        }
-        Log.d("salam", "\n\n")
-        Log.d("salam", answer)
-
+        answer = answer.replace("**", "")
+        answerTextView.text = answer
         button = findViewById(R.id.button)
         button.setOnClickListener {
             val intent = Intent(this@AnswerActivity, MainActivity::class.java)
